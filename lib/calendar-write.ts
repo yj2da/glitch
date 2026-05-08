@@ -8,7 +8,7 @@ export async function createCalendarEvent(email: string, password: string, event
     
     const calendars = await client.fetchCalendars();
     // "Calendar" 또는 "일정" 이름이 포함된 캘린더를 우선 찾고, 없으면 첫 번째 사용
-    const targetCalendar = calendars.find(c => c.displayName?.toLowerCase().includes('calendar') || c.displayName?.includes('일정')) || calendars[0];
+    const targetCalendar = calendars.find(c => (c as any).displayName?.toLowerCase().includes('calendar') || (c as any).displayName?.includes('일정')) || calendars[0];
     
     if (!targetCalendar) throw new Error('저장할 캘린더를 찾을 수 없습니다.');
 
@@ -39,7 +39,7 @@ export async function createCalendarEvent(email: string, password: string, event
     await client.createCalendarObject({
       calendar: targetCalendar,
       filename,
-      iCalendarData: icsData,
+      iCalString: icsData,
     });
 
     return { success: true, uid };
@@ -55,17 +55,20 @@ export async function deleteCalendarEvent(email: string, password: string, event
     await client.login();
     const calendars = await client.fetchCalendars();
     
-    // 이벤트를 찾기 위해 모든 캘린더 검색 (보통 특정 캘린더에 있겠지만, UID로 식별 가능해야 함)
-    // ics 파일명이 UID.ics 형식이므로 이를 기반으로 삭제 시도
+    // 이벤트를 찾기 위해 모든 캘린더 검색
     for (const calendar of calendars) {
       try {
-        await client.deleteCalendarObject({
-          calendar,
-          filename: eventId.endsWith('.ics') ? eventId : `${eventId}.ics`
-        });
-        return { success: true };
+        const objects = await client.fetchCalendarObjects({ calendar });
+        const target = objects.find(obj => obj.url.endsWith(eventId) || obj.url.endsWith(`${eventId}.ics`));
+        
+        if (target) {
+          await client.deleteCalendarObject({
+            calendarObject: target
+          });
+          return { success: true };
+        }
       } catch (err) {
-        // 이 캘린더에 없으면 다음으로
+        // 이 캘린더에서 검색 실패 시 다음으로
       }
     }
     throw new Error('삭제할 일정을 찾을 수 없습니다.');

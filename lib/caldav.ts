@@ -69,7 +69,7 @@ export async function fetchCalendarEvents(email?: string, password?: string) {
             start: start.toISOString(),
             end: (end || new Date(start.getTime() + 3600000)).toISOString(),
             allDay: eventObj.startDate?.isDate || false,
-            calendarName: event.calendar?.displayName || '기본',
+            calendarName: (event as any).calendar?.displayName || '기본',
             category: getCategoryByTitle(summary) // 서버에서 미리 카테고리 계산
           };
         });
