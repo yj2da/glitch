@@ -16,11 +16,10 @@ export const getCalendarClient = (email?: string, password?: string) => {
 // 단순 키워드 기반 분류 로직 (서버측에서도 처리 가능하도록 분리)
 const getCategoryByTitle = (title: string): string => {
   const t = title.toLowerCase();
-  if (t.includes('공부') || t.includes('시험') || t.includes('과제') || t.includes('강의') || t.includes('학원') || t.includes('스터디')) return '공부';
-  if (t.includes('운동') || t.includes('헬스') || t.includes('축구') || t.includes('야구') || t.includes('러닝') || t.includes('테니스')) return '운동';
-  if (t.includes('회의') || t.includes('미팅') || t.includes('업무') || t.includes('출근') || t.includes('마감') || t.includes('프로젝트')) return '업무';
-  if (t.includes('휴식') || t.includes('여행') || t.includes('카페') || t.includes('영화') || t.includes('데이트') || t.includes('노래방') || t.includes('소라')) return '휴식';
-  if (t.includes('독서') || t.includes('세미나') || t.includes('교육') || t.includes('발표')) return '자기계발';
+  if (t.includes('과제') || t.includes('공부') || t.includes('시험') || t.includes('학원') || t.includes('도서관')) return '과제/공부';
+  if (t.includes('수업') || t.includes('강의') || t.includes('세미나') || t.includes('특강')) return '수업/강의';
+  if (t.includes('식사') || t.includes('약속') || t.includes('회식') || t.includes('카페') || t.includes('데이트') || t.includes('모임')) return '식사/약속';
+  if (t.includes('운동') || t.includes('헬스') || t.includes('축구') || t.includes('야구') || t.includes('러닝') || t.includes('테니스') || t.includes('취미')) return '취미/운동';
   return '기타';
 };
 

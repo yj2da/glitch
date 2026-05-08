@@ -3,12 +3,13 @@ import { createCalendarEvent } from '@/lib/calendar-write';
 
 export async function POST(request: Request) {
   try {
-    const { email, password, glitch } = await request.json();
+    const { email, password, glitch, startDate: customStartDate } = await request.json();
     
-    // 현재 시간으로부터 1시간 뒤에 시작하는 일정으로 설정
-    const startDate = new Date();
-    startDate.setHours(startDate.getHours() + 1);
-    startDate.setMinutes(0, 0, 0);
+    const startDate = customStartDate ? new Date(customStartDate) : new Date();
+    if (!customStartDate) {
+      startDate.setHours(startDate.getHours() + 1);
+      startDate.setMinutes(0, 0, 0);
+    }
 
     const endDate = new Date(startDate);
     endDate.setHours(endDate.getHours() + 1);
