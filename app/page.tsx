@@ -115,7 +115,7 @@ export default function Home() {
     setLoginError('');
     setWarning('');
     try {
-      const response = await fetch('/api/calendar', {
+      const response = await fetch('/glitch/api/calendar', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password: appPassword }),
@@ -143,7 +143,7 @@ export default function Home() {
     if (!credentials) return;
     setIsLoading(true);
     try {
-      const response = await fetch('/api/calendar', {
+      const response = await fetch('/glitch/api/calendar', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: credentials.email, password: credentials.password }),
