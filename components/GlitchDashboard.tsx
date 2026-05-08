@@ -126,7 +126,7 @@ const GlitchDashboard: React.FC<GlitchDashboardProps> = ({ events, userCredentia
             GLITCH SYSTEM
           </h2>
           <button
-            onClick={fetchGlitches}
+            onClick={() => fetchGlitches()}
             disabled={isLoading}
             className="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-2xl font-bold transition-all active:scale-95 disabled:opacity-50 text-xs shadow-lg shadow-slate-200"
           >
