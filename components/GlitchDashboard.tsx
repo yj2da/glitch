@@ -49,7 +49,7 @@ const GlitchDashboard: React.FC<GlitchDashboardProps> = ({ events, userCredentia
 
     setIsLoading(true);
     try {
-      const response = await fetch('/glitch/api/glitch', {
+      const response = await fetch('/api/glitch', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ events, difficulty, category: targetCategory }),
@@ -78,7 +78,7 @@ const GlitchDashboard: React.FC<GlitchDashboardProps> = ({ events, userCredentia
     
     setIsAdding(pendingGlitch.id);
     try {
-      const response = await fetch('/glitch/api/glitch/add', {
+      const response = await fetch('/api/glitch/add', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
