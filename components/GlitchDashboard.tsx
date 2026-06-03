@@ -24,7 +24,19 @@ const GlitchDashboard: React.FC<GlitchDashboardProps> = ({ events, userCredentia
   // Settings state
   const [difficulty, setDifficulty] = useState('보통');
   const [targetCategory, setTargetCategory] = useState('전체');
+  const [targetGoal, setTargetGoal] = useState('전체');
   
+  // Load goal from localStorage
+  useEffect(() => {
+    const savedGoal = localStorage.getItem('glitch_target_goal');
+    if (savedGoal) setTargetGoal(savedGoal);
+  }, []);
+
+  // Save goal to localStorage
+  useEffect(() => {
+    localStorage.setItem('glitch_target_goal', targetGoal);
+  }, [targetGoal]);
+
   // Date selection state
   const [pendingGlitch, setPendingGlitch] = useState<Glitch | null>(null);
   const [customDate, setCustomDate] = useState('');
@@ -52,7 +64,7 @@ const GlitchDashboard: React.FC<GlitchDashboardProps> = ({ events, userCredentia
       const response = await fetch('/api/glitch', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ events, difficulty, category: targetCategory }),
+        body: JSON.stringify({ events, difficulty, category: targetCategory, goal: targetGoal }),
       });
       const data = await response.json();
       if (data.suggestions) {
@@ -116,7 +128,7 @@ const GlitchDashboard: React.FC<GlitchDashboardProps> = ({ events, userCredentia
         return () => clearTimeout(timer);
       }
     }
-  }, [events, difficulty, targetCategory]);
+  }, [events, difficulty, targetCategory, targetGoal]);
 
   return (
     <div className="bg-slate-50/50 backdrop-blur-xl text-slate-800 p-8 rounded-[32px] shadow-[0_10px_40px_rgba(15,23,42,0.03)] border border-white h-full flex flex-col relative">
@@ -135,27 +147,53 @@ const GlitchDashboard: React.FC<GlitchDashboardProps> = ({ events, userCredentia
         </div>
 
         {/* Settings Controls */}
-        <div className="flex flex-wrap gap-3 text-[10px] font-black uppercase tracking-wider">
-          <div className="flex bg-white/80 p-1.5 rounded-2xl border border-slate-100 shadow-sm">
-            {['쉬움', '보통', '어려움'].map(d => (
-              <button
-                key={d}
-                onClick={() => setDifficulty(d)}
-                className={`px-4 py-1.5 rounded-xl transition-all ${difficulty === d ? 'bg-indigo-600 text-white shadow-md shadow-indigo-100' : 'text-slate-400 hover:text-slate-600'}`}
-              >
-                {d}
-              </button>
-            ))}
+        <div className="flex flex-col gap-4">
+          <div className="flex flex-wrap gap-3 text-[10px] font-black uppercase tracking-wider">
+            <div className="flex bg-white/80 p-1.5 rounded-2xl border border-slate-100 shadow-sm">
+              {['쉬움', '보통', '어려움'].map(d => (
+                <button
+                  key={d}
+                  onClick={() => setDifficulty(d)}
+                  className={`px-4 py-1.5 rounded-xl transition-all ${difficulty === d ? 'bg-indigo-600 text-white shadow-md shadow-indigo-100' : 'text-slate-400 hover:text-slate-600'}`}
+                >
+                  {d}
+                </button>
+              ))}
+            </div>
+            <select 
+              value={targetCategory}
+              onChange={(e) => setTargetCategory(e.target.value)}
+              className="bg-white/80 p-1.5 px-4 rounded-2xl border border-slate-100 text-slate-600 outline-none font-bold shadow-sm hover:border-indigo-100 transition-all cursor-pointer"
+            >
+              {['전체', '과제/공부', '수업/강의', '식사/약속', '취미/운동', '기타'].map(c => (
+                <option key={c} value={c}>{c}</option>
+              ))}
+            </select>
           </div>
-          <select 
-            value={targetCategory}
-            onChange={(e) => setTargetCategory(e.target.value)}
-            className="bg-white/80 p-1.5 px-4 rounded-2xl border border-slate-100 text-slate-600 outline-none font-bold shadow-sm hover:border-indigo-100 transition-all cursor-pointer"
-          >
-            {['전체', '과제/공부', '수업/강의', '식사/약속', '취미/운동', '기타'].map(c => (
-              <option key={c} value={c}>{c}</option>
-            ))}
-          </select>
+          
+          <div className="flex flex-col gap-2">
+            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2">나의 현재 목표</span>
+            <div className="relative">
+              <input 
+                type="text"
+                value={targetGoal}
+                onChange={(e) => setTargetGoal(e.target.value)}
+                placeholder="예: 매일 책 10페이지 읽기, 새로운 사람 사귀기..."
+                className="w-full bg-white/80 p-3.5 px-4 rounded-2xl border border-slate-100 text-slate-700 outline-none font-bold shadow-sm focus:border-indigo-300 focus:ring-4 focus:ring-indigo-50 transition-all text-xs placeholder:text-slate-300"
+              />
+              {targetGoal && (
+                <button 
+                  onClick={() => setTargetGoal('')}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-300 hover:text-slate-500"
+                >
+                  ✕
+                </button>
+              )}
+            </div>
+            <p className="px-2 text-[9px] text-slate-400 font-medium">
+              직접 입력한 목표를 바탕으로 AI가 맞춤형 Glitch를 제안합니다. ✨
+            </p>
+          </div>
         </div>
       </div>
 

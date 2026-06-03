@@ -6,7 +6,7 @@ const model = genAI.getGenerativeModel({ model: "gemini-3-flash-preview" });
 
 const openai = process.env.OPENAI_API_KEY ? new OpenAI({ apiKey: process.env.OPENAI_API_KEY }) : null;
 
-export async function generateGlitchSuggestions(events: any[], options?: { difficulty?: string, category?: string }) {
+export async function generateGlitchSuggestions(events: any[], options?: { difficulty?: string, category?: string, goal?: string }) {
   if (!process.env.GEMINI_API_KEY && !openai) {
     console.warn("AI API keys are missing. Returning default suggestions.");
     const tomorrow = new Date();
@@ -18,7 +18,7 @@ export async function generateGlitchSuggestions(events: any[], options?: { diffi
     ];
   }
 
-  const { difficulty = '보통', category = '전체' } = options || {};
+  const { difficulty = '보통', category = '전체', goal = '전체' } = options || {};
   const now = new Date().toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' });
 
   const limitedEvents = events.slice(0, 50);
@@ -30,10 +30,11 @@ export async function generateGlitchSuggestions(events: any[], options?: { diffi
 
   const prompt = `현재 시간: ${now}
     당신의 현재 일정 통계입니다: [${statsString}]
-    당신의 일상을 'Comfort Zone'에서 벗어나게 할 만한 아주 귀엽고 창의적인 활동 3가지를 제안해주세요.
+    당신의 현재 목표는 [${goal}]입니다. 이 목표에 부합하면서도, 당신의 일상을 'Comfort Zone'에서 벗어나게 할 만한 아주 귀엽고 창의적인 활동 3가지를 제안해주세요.
     사용자가 파스텔톤의 예쁜 일상을 보낼 수 있도록 다정하고 친근한 말투로 제목과 설명을 작성해주세요.
     
     설정값:
+    - 목표: ${goal}
     - 난이도: ${difficulty} (쉬움: 소소한 변화, 보통: 적당한 도전, 어려움: 확실한 탈출)
     - 선호 카테고리: ${category} (전체 또는 특정 카테고리)
 

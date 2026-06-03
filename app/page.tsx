@@ -18,10 +18,10 @@ export default function Home() {
   const [categoryMap, setCategoryMap] = useState<Record<string, string>>({});
   const [suggestion, setSuggestion] = useState<{ keyword: string, category: string } | null>(null);
   const [dismissedKeywords, setDismissedKeywords] = useState<string[]>([]);
-  const [isSuggestionEnabled, setIsSuggestionEnabled] = useState(true);
+  const [isSuggestionEnabled, setIsSuggestionEnabled] = useState(false);
 
   // Lifted state for monthly sync
-  const [currentDate, setCurrentDate] = useState(new Date(2026, 4, 8));
+  const [currentDate, setCurrentDate] = useState(new Date());
 
   // Load category map from localStorage
   useEffect(() => {
@@ -210,7 +210,7 @@ export default function Home() {
                   : "text-slate-400 border-slate-200 bg-white/50 hover:bg-slate-50"
                 }`}
               >
-                AI 추천 {isSuggestionEnabled ? 'ON' : 'OFF'}
+                카테고리 추천 {isSuggestionEnabled ? 'ON' : 'OFF'}
               </button>
               <button 
                 onClick={() => { setIsLoggedIn(false); setEvents([]); }}
