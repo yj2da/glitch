@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { Calendar, dateFnsLocalizer, View, Views } from 'react-big-calendar';
 import { format, parse, startOfWeek, getDay } from 'date-fns';
 import { ko } from 'date-fns/locale/ko';
-import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, LayoutGrid, List, CheckCircle2, Info } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, LayoutGrid, List, CheckCircle2, Info, Maximize2, Minimize2 } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
@@ -33,67 +33,92 @@ const categoryStyles: Record<string, { bg: string, border: string, text: string,
   '기타': { bg: '#F8FAFC', border: '#CBD5E1', text: '#475569', shadow: 'rgba(203, 213, 225, 0.3)' },
 };
 
-const CustomToolbar = (toolbar: any) => {
-  const goToBack = () => { toolbar.onNavigate('PREV'); };
-  const goToNext = () => { toolbar.onNavigate('NEXT'); };
-  const goToCurrent = () => { toolbar.onNavigate('TODAY'); };
-  const label = () => {
-    const date = toolbar.date;
-    return (
-      <span className="text-xl font-bold text-slate-900">
-        {date.getFullYear()}년 {date.getMonth() + 1}월
-      </span>
-    );
-  };
-
-  return (
-    <div className="flex items-center justify-between px-6 py-4 bg-white border-b border-slate-100">
-      <div className="flex items-center gap-4">
-        <button onClick={goToCurrent} className="px-4 py-2 text-sm font-semibold text-slate-700 bg-slate-50 border border-slate-200 rounded-lg hover:bg-slate-100 transition-colors">오늘</button>
-        <div className="flex items-center gap-1">
-          <button onClick={goToBack} className="p-2 text-slate-600 hover:bg-slate-50 rounded-full transition-colors"><ChevronLeft size={20} /></button>
-          <button onClick={goToNext} className="p-2 text-slate-600 hover:bg-slate-50 rounded-full transition-colors"><ChevronRight size={20} /></button>
-        </div>
-        {label()}
-      </div>
-
-      <div className="flex bg-slate-100 p-1 rounded-xl">
-        {[
-          { id: Views.MONTH, label: '월', icon: LayoutGrid },
-          { id: Views.WEEK, label: '주', icon: CalendarIcon },
-          { id: Views.DAY, label: '일', icon: List },
-        ].map((viewOption) => (
-          <button key={viewOption.id} onClick={() => toolbar.onView(viewOption.id)} className={cn("flex items-center gap-2 px-4 py-1.5 rounded-lg text-sm font-medium transition-all", toolbar.view === viewOption.id ? "bg-white text-blue-600 shadow-sm" : "text-slate-500 hover:text-slate-700")}>
-            <viewOption.icon size={16} />
-            {viewOption.label}
-          </button>
-        ))}
-      </div>
-    </div>
-  );
-};
-
-const EventComponent = ({ event }: any) => {
-  const style = categoryStyles[event.category] || categoryStyles['기타'];
-  return (
-    <div className="px-2 h-full flex items-center">
-      <div className="text-[11px] font-bold leading-none truncate" style={{ color: style.text }}>{event.title}</div>
-    </div>
-  );
-};
-
 interface CalendarViewProps {
   events: any[];
   currentDate: Date;
   onNavigate: (date: Date) => void;
   categoryMap: Record<string, string>;
   onClassify: (title: string, category: string) => void;
+  isGlitchMode: boolean;
+  setIsGlitchMode: (mode: boolean) => void;
+  selectedEvents: any[];
+  onSelectEventForGlitch: (event: any) => void;
 }
 
-const CalendarView: React.FC<CalendarViewProps> = ({ events, currentDate, onNavigate, categoryMap, onClassify }) => {
+const CalendarView: React.FC<CalendarViewProps> = ({ 
+  events, currentDate, onNavigate, categoryMap, onClassify,
+  isGlitchMode, setIsGlitchMode, selectedEvents, onSelectEventForGlitch
+}) => {
   const [view, setView] = useState<View>(Views.MONTH);
   const [selectedEvent, setSelectedEvent] = useState<any | null>(null);
   const [isClassifying, setIsClassifying] = useState(false);
+
+  const CustomToolbar = (toolbar: any) => {
+    const goToBack = () => { toolbar.onNavigate('PREV'); };
+    const goToNext = () => { toolbar.onNavigate('NEXT'); };
+    const goToCurrent = () => { toolbar.onNavigate('TODAY'); };
+    const label = () => {
+      const date = toolbar.date;
+      return (
+        <span className="text-xl font-bold text-slate-900">
+          {date.getFullYear()}년 {date.getMonth() + 1}월
+        </span>
+      );
+    };
+
+    return (
+      <div className="flex items-center justify-between px-6 py-4 bg-white border-b border-slate-100">
+        <div className="flex items-center gap-4">
+          <button onClick={goToCurrent} className="px-4 py-2 text-sm font-semibold text-slate-700 bg-slate-50 border border-slate-200 rounded-lg hover:bg-slate-100 transition-colors">오늘</button>
+          <div className="flex items-center gap-1">
+            <button onClick={goToBack} className="p-2 text-slate-600 hover:bg-slate-50 rounded-full transition-colors"><ChevronLeft size={20} /></button>
+            <button onClick={goToNext} className="p-2 text-slate-600 hover:bg-slate-50 rounded-full transition-colors"><ChevronRight size={20} /></button>
+          </div>
+          {label()}
+        </div>
+
+        <div className="flex items-center gap-4">
+          <button 
+            onClick={() => setIsGlitchMode(!isGlitchMode)}
+            className={cn(
+              "flex items-center gap-2 px-5 py-2 rounded-2xl text-sm font-black transition-all shadow-sm active:scale-95 border",
+              isGlitchMode 
+              ? "bg-indigo-600 text-white border-indigo-500 shadow-indigo-100" 
+              : "bg-white text-indigo-600 border-indigo-100 hover:bg-indigo-50"
+            )}
+          >
+            <CalendarIcon size={16} />
+            Glitch 만들기 {isGlitchMode ? 'ON' : 'OFF'}
+          </button>
+
+          <div className="flex bg-slate-100 p-1 rounded-xl">
+            {[
+              { id: Views.MONTH, label: '월', icon: LayoutGrid },
+              { id: Views.WEEK, label: '주', icon: CalendarIcon },
+              { id: Views.DAY, label: '일', icon: List },
+            ].map((viewOption) => (
+              <button key={viewOption.id} onClick={() => toolbar.onView(viewOption.id)} className={cn("flex items-center gap-2 px-4 py-1.5 rounded-lg text-sm font-medium transition-all", toolbar.view === viewOption.id ? "bg-white text-blue-600 shadow-sm" : "text-slate-500 hover:text-slate-700")}>
+                <viewOption.icon size={16} />
+                {viewOption.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const EventComponent = ({ event }: any) => {
+    const isSelected = isGlitchMode && selectedEvents.some(se => se.title === event.title && new Date(se.start).getTime() === new Date(event.start).getTime());
+    const style = categoryStyles[event.category] || categoryStyles['기타'];
+    return (
+      <div className="px-2 h-full flex items-center">
+        <div className="text-[11px] font-bold leading-none truncate" style={{ color: isSelected ? 'white' : style.text }}>
+          {isSelected && '✨ '}{event.title}
+        </div>
+      </div>
+    );
+  };
 
   const getCategory = (title: string): string => {
     // 1. Check manual mapping first (exact title match)
@@ -132,16 +157,22 @@ const CalendarView: React.FC<CalendarViewProps> = ({ events, currentDate, onNavi
 
   const eventPropGetter = (event: any) => {
     const style = categoryStyles[event.category] || categoryStyles['기타'];
+    const isSelected = isGlitchMode && selectedEvents.some(se => se.title === event.title && new Date(se.start).getTime() === new Date(event.start).getTime());
+    
     return {
-      className: "hover:scale-[1.02] transition-transform duration-200 cursor-pointer",
+      className: cn(
+        "hover:scale-[1.02] transition-transform duration-200 cursor-pointer",
+        isSelected && "ring-4 ring-indigo-500 ring-offset-2 scale-105 z-10"
+      ),
       style: {
-        backgroundColor: style.bg,
-        borderLeft: `3px solid ${style.border}`,
+        backgroundColor: isSelected ? '#4F46E5' : style.bg,
+        borderLeft: isSelected ? 'none' : `3px solid ${style.border}`,
         borderRadius: '6px',
         display: 'block',
-        boxShadow: `0 2px 4px ${style.shadow}`,
+        boxShadow: isSelected ? '0 10px 15px -3px rgba(79, 70, 229, 0.4)' : `0 2px 4px ${style.shadow}`,
         margin: '1px 2px',
-        borderTop: 'none', borderRight: 'none', borderBottom: 'none'
+        borderTop: 'none', borderRight: 'none', borderBottom: 'none',
+        color: isSelected ? 'white' : style.text
       }
     };
   };
@@ -206,7 +237,14 @@ const CalendarView: React.FC<CalendarViewProps> = ({ events, currentDate, onNavi
         onNavigate={onNavigate}
         onView={setView}
         eventPropGetter={eventPropGetter}
-        onSelectEvent={(event) => { setSelectedEvent(event); setIsClassifying(true); }}
+        onSelectEvent={(event) => { 
+          if (isGlitchMode) {
+            onSelectEventForGlitch(event);
+          } else {
+            setSelectedEvent(event); 
+            setIsClassifying(true); 
+          }
+        }}
         startAccessor="start"
         endAccessor="end"
         style={{ flex: 1 }}

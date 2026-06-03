@@ -5,6 +5,12 @@ import CalendarView from '@/components/CalendarView';
 import GlitchDashboard from '@/components/GlitchDashboard';
 import LoginScreen from '@/components/LoginScreen';
 import { Info } from 'lucide-react';
+import { clsx, type ClassValue } from 'clsx';
+import { twMerge } from 'tailwind-merge';
+
+function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));
+}
 
 export default function Home() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -22,6 +28,23 @@ export default function Home() {
 
   // Lifted state for monthly sync
   const [currentDate, setCurrentDate] = useState(new Date());
+
+  // New state for Glitch Selection feature
+  const [isGlitchMode, setIsGlitchMode] = useState(false);
+  const [selectedEvents, setSelectedEvents] = useState<any[]>([]);
+
+  // Maximize state for Glitch System
+  const [isGlitchMaximized, setIsGlitchMaximized] = useState(true);
+
+  const handleSelectEventForGlitch = (event: any) => {
+    setSelectedEvents(prev => {
+      const exists = prev.find(e => e.title === event.title && new Date(e.start).getTime() === new Date(event.start).getTime());
+      if (exists) {
+        return prev.filter(e => !(e.title === event.title && new Date(e.start).getTime() === new Date(event.start).getTime()));
+      }
+      return [...prev, event];
+    });
+  };
 
   // Load category map from localStorage
   useEffect(() => {
@@ -232,6 +255,7 @@ export default function Home() {
             </div>
           )}
 
+          {/* Calendar Section - Always Visible */}
           <div className="lg:col-span-2 space-y-6">
             <div className="flex justify-between items-center px-4 relative">
               <h2 className="text-xl font-black text-slate-800 flex items-center gap-3">
@@ -239,21 +263,17 @@ export default function Home() {
                 APPLE CALENDAR
               </h2>
 
-              {/* Keyword Suggestion Bubble - Moved next to header */}
+              {/* Keyword Suggestion Bubble */}
               {isSuggestionEnabled && suggestion && (
                 <div className="absolute left-[240px] top-[-15px] z-[500] animate-in slide-in-from-left-4 duration-500">
                   <div className="bg-slate-900 text-white px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-4 relative border border-slate-700/50 backdrop-blur-md">
-                    {/* Left Triangle */}
                     <div className="absolute left-[-6px] top-1/2 -translate-y-1/2 w-3 h-3 bg-slate-900 rotate-45 border-l border-b border-slate-700/50"></div>
-                    
                     <div className="w-6 h-6 bg-indigo-500 rounded-lg flex items-center justify-center flex-shrink-0 animate-pulse">
                       <Info className="w-4 h-4 text-white" />
                     </div>
-                    
                     <p className="text-[11px] font-bold leading-tight">
                       <span className="text-indigo-400">"{suggestion.keyword}"</span> 일정은 전부 <span className="text-indigo-400">"{suggestion.category}"</span>로 분류할까요?
                     </p>
-
                     <div className="flex items-center gap-1.5 ml-2">
                       <button onClick={handleApplySuggestion} className="bg-indigo-500 hover:bg-indigo-600 text-white text-[10px] font-black px-3 py-1.5 rounded-lg transition-all active:scale-95">네</button>
                       <button onClick={handleDismissSuggestion} className="bg-slate-800 hover:bg-slate-700 text-slate-400 text-[10px] font-black px-2 py-1.5 rounded-lg">아니오</button>
@@ -268,10 +288,15 @@ export default function Home() {
               onNavigate={setCurrentDate}
               categoryMap={categoryMap}
               onClassify={handleClassify}
+              isGlitchMode={isGlitchMode}
+              setIsGlitchMode={setIsGlitchMode}
+              selectedEvents={selectedEvents}
+              onSelectEventForGlitch={handleSelectEventForGlitch}
             />
           </div>
 
-          <div className="space-y-6 h-[750px]">
+          {/* AI Glitch Section */}
+          <div className="lg:col-span-1 space-y-6 h-[750px]">
             <h2 className="text-xl font-black text-slate-800 flex items-center gap-3 px-4">
               <span className="w-2.5 h-2.5 bg-indigo-400 rounded-full shadow-[0_0_12px_rgba(129,140,248,0.4)]"></span>
               AI GLITCHES
@@ -280,6 +305,11 @@ export default function Home() {
               events={currentMonthEvents} 
               userCredentials={credentials} 
               onRefreshCalendar={refreshCalendar} 
+              selectedEvents={selectedEvents}
+              onClearSelectedEvents={() => setSelectedEvents([])}
+              onRemoveSelectedEvent={handleSelectEventForGlitch}
+              isMaximized={isGlitchMaximized}
+              onToggleMaximize={() => setIsGlitchMaximized(!isGlitchMaximized)}
             />
           </div>
         </div>

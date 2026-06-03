@@ -6,7 +6,7 @@ const model = genAI.getGenerativeModel({ model: "gemini-3-flash-preview" });
 
 const openai = process.env.OPENAI_API_KEY ? new OpenAI({ apiKey: process.env.OPENAI_API_KEY }) : null;
 
-export async function generateGlitchSuggestions(events: any[], options?: { difficulty?: string, category?: string, goal?: string }) {
+export async function generateGlitchSuggestions(events: any[], options?: { difficulty?: string, category?: string, goal?: string, tone?: string, selectedEvents?: any[] }) {
   if (!process.env.GEMINI_API_KEY && !openai) {
     console.warn("AI API keys are missing. Returning default suggestions.");
     const tomorrow = new Date();
@@ -18,7 +18,7 @@ export async function generateGlitchSuggestions(events: any[], options?: { diffi
     ];
   }
 
-  const { difficulty = '보통', category = '전체', goal = '전체' } = options || {};
+  const { difficulty = '보통', category = '전체', goal = '전체', tone = '다정하고 친근한', selectedEvents = [] } = options || {};
   const now = new Date().toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' });
 
   const limitedEvents = events.slice(0, 50);
@@ -28,10 +28,31 @@ export async function generateGlitchSuggestions(events: any[], options?: { diffi
   }, {});
   const statsString = Object.entries(stats).map(([k, v]) => `${k}: ${v}개`).join(', ');
 
+  // 말투(Tone) 처리: '나의 일정처럼'일 경우 기존 일정 샘플 추출
+  let toneInstruction = tone;
+  if (tone === '나의 일정처럼' && events.length > 0) {
+    const samples = events
+      .filter(e => e.title && e.title.length > 1)
+      .slice(0, 10)
+      .map(e => `"${e.title}"`)
+      .join(', ');
+    toneInstruction = `다음은 사용자의 실제 일정 제목들입니다: [${samples}]. 
+    위 일정들의 말투, 길이, 단어 선택 스타일을 분석하여 그와 아주 유사한 느낌으로 제목과 설명을 작성해주세요.`;
+  }
+
+  // 선택된 일정(Selected Events) 처리
+  let selectionContext = '';
+  if (selectedEvents.length > 0) {
+    const eventTitles = selectedEvents.map(e => `"${e.title}"`).join(', ');
+    selectionContext = `사용자가 특히 다음 일정들과 연관된 Glitch를 원합니다: [${eventTitles}].
+    이 일정들을 확장하거나, 보완하거나, 혹은 이 일정들 사이의 틈새를 활용한 창의적인 활동을 제안해주세요.`;
+  }
+
   const prompt = `현재 시간: ${now}
     당신의 현재 일정 통계입니다: [${statsString}]
     당신의 현재 목표는 [${goal}]입니다. 이 목표에 부합하면서도, 당신의 일상을 'Comfort Zone'에서 벗어나게 할 만한 아주 귀엽고 창의적인 활동 3가지를 제안해주세요.
-    사용자가 파스텔톤의 예쁜 일상을 보낼 수 있도록 다정하고 친근한 말투로 제목과 설명을 작성해주세요.
+    말투 설정: ${toneInstruction}
+    ${selectionContext}
     
     설정값:
     - 목표: ${goal}
