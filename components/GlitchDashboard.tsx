@@ -160,18 +160,28 @@ const GlitchDashboard: React.FC<GlitchDashboardProps> = ({
   }, [events, difficulty, targetCategory, targetGoal, targetTone, selectedEvents]);
 
   const glitchDegreeData = useMemo(() => {
-    const glitchEvents = events.filter(e => e.title.includes('[GLITCH]'));
-    const totalCount = events.length;
+    const today = new Date();
+    const currentMonth = today.getMonth();
+    const currentYear = today.getFullYear();
+
+    // Filter events to only include Today's Month
+    const monthEvents = events.filter(e => {
+      const d = new Date(e.start);
+      return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
+    });
+
+    const glitchEvents = monthEvents.filter(e => e.title.includes('[GLITCH]'));
     const glitchCount = glitchEvents.length;
-    const overallPercentage = totalCount > 0 ? Math.min(Math.round((glitchCount / Math.max(totalCount * 0.1, 1)) * 100), 100) : 0;
+    // Total goal is 30 for overall level calculation
+    const overallPercentage = Math.min(Math.round((glitchCount / 30) * 100), 100);
     
+    // Category specific calculations with fixed goal of 10
     const categories = ['과제/공부', '수업/강의', '식사/약속', '취미/운동', '기타'];
     const categoryStats = categories.map(cat => {
-      const catEvents = events.filter(e => e.category === cat);
+      const catEvents = monthEvents.filter(e => e.category === cat);
       const catGlitchEvents = catEvents.filter(e => e.title.includes('[GLITCH]'));
-      const catTotal = catEvents.length;
       const catGlitch = catGlitchEvents.length;
-      const catPercentage = catTotal > 0 ? Math.min(Math.round((catGlitch / Math.max(catTotal * 0.2, 1)) * 100), 100) : 0;
+      const catPercentage = Math.min(Math.round((catGlitch / 10) * 100), 100);
       
       const colors: any = {
         '과제/공부': 'bg-purple-500',
@@ -181,18 +191,18 @@ const GlitchDashboard: React.FC<GlitchDashboardProps> = ({
         '기타': 'bg-slate-400'
       };
 
-      return { name: cat, total: catTotal, glitch: catGlitch, percentage: catPercentage, color: colors[cat] };
+      return { name: cat, glitch: catGlitch, percentage: catPercentage, color: colors[cat] };
     });
 
     let level = '완벽한 루틴';
     let color = 'from-slate-400 to-slate-500';
     let message = '익숙한 루틴 속에 머물러 계시네요.';
 
-    if (glitchCount >= 7) {
+    if (glitchCount >= 10) {
       level = '카오스 메이커';
       color = 'from-purple-600 via-indigo-600 to-blue-600';
       message = '세상을 뒤흔드는 변화의 중심에 있습니다! 🔥';
-    } else if (glitchCount >= 4) {
+    } else if (glitchCount >= 5) {
       level = '자유로운 여행자';
       color = 'from-indigo-500 to-purple-500';
       message = '일상의 경계를 허물기 시작했습니다. 멋져요!';
@@ -218,7 +228,7 @@ const GlitchDashboard: React.FC<GlitchDashboardProps> = ({
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-3">
             <div>
-              <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">나의 GLITCH 정도</span>
+              <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">나의 GLITCH 정도 ({new Date().getMonth() + 1}월)</span>
               <h3 className={cn(
                 "font-black bg-gradient-to-r transition-all duration-500",
                 glitchDegreeData.color,
@@ -250,7 +260,7 @@ const GlitchDashboard: React.FC<GlitchDashboardProps> = ({
         )}>
           <div className="space-y-2">
             <div className="flex justify-between items-center text-[10px] font-bold">
-              <span className="text-slate-500 uppercase tracking-tighter">Overall Progress</span>
+              <span className="text-slate-500 uppercase tracking-tighter">Monthly Progress</span>
               <span className="text-indigo-600 font-black">{glitchDegreeData.percentage}%</span>
             </div>
             <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
@@ -267,7 +277,7 @@ const GlitchDashboard: React.FC<GlitchDashboardProps> = ({
               <div key={idx} className="space-y-1">
                 <div className="flex justify-between items-center text-[8px] font-black uppercase tracking-widest">
                   <span className="text-slate-400">{stat.name}</span>
-                  <span className="text-slate-600">{stat.glitch} / {stat.total}</span>
+                  <span className="text-slate-600">{stat.glitch} / 10</span>
                 </div>
                 <div className="h-1 w-full bg-slate-50 rounded-full overflow-hidden">
                   <div 
