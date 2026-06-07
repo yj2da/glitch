@@ -41,7 +41,7 @@ const GlitchDashboard: React.FC<GlitchDashboardProps> = ({
   const [difficulty, setDifficulty] = useState('보통');
   const [targetCategory, setTargetCategory] = useState('전체');
   const [targetGoal, setTargetGoal] = useState('전체');
-  const [targetTone, setTargetTone] = useState('나의 일정처럼');
+  const [targetTone, setTargetTone] = useState('매우 현실적이게');
   const [isCustomTone, setIsCustomTone] = useState(false);
   
   // Load settings from localStorage
@@ -51,7 +51,7 @@ const GlitchDashboard: React.FC<GlitchDashboardProps> = ({
     const savedTone = localStorage.getItem('glitch_target_tone');
     if (savedTone) {
       setTargetTone(savedTone);
-      const defaults = ['다정하고 친근한', '냉철하고 분석적인', '에너제틱하고 열정적인', '나의 일정처럼'];
+      const defaults = ['매우 현실적이게', '매우 도전적이게'];
       if (!defaults.includes(savedTone)) setIsCustomTone(true);
     }
   }, []);
@@ -353,7 +353,7 @@ const GlitchDashboard: React.FC<GlitchDashboardProps> = ({
               </div>
 
               <div className="flex flex-col gap-2">
-                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2">답변 말투 설정</span>
+                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2">답변 glitch 정도</span>
                 <div className="relative space-y-3">
                   <select 
                     value={isCustomTone ? 'custom' : targetTone}
@@ -368,11 +368,9 @@ const GlitchDashboard: React.FC<GlitchDashboardProps> = ({
                     }}
                     className="w-full bg-white/80 p-4 px-5 rounded-2xl border border-slate-100 text-slate-700 outline-none font-bold shadow-sm focus:border-indigo-300 focus:ring-4 focus:ring-indigo-50 transition-all text-xs cursor-pointer appearance-none"
                   >
-                    <option value="다정하고 친근한">다정하고 친근한</option>
-                    <option value="냉철하고 분석적인">냉철하고 분석적인</option>
-                    <option value="에너제틱하고 열정적인">에너제틱하고 열정적인</option>
-                    <option value="나의 일정처럼">나의 일정처럼 (스타일 모방)</option>
-                    <option value="custom">직접 입력...</option>
+                    <option value="매우 현실적이게">매우 현실적이게</option>
+                    <option value="매우 도전적이게">매우 도전적이게</option>
+                    <option value="custom">사용자 입력...</option>
                   </select>
                   {isCustomTone && (
                     <div className="relative animate-in slide-in-from-top-2 duration-300">
@@ -380,12 +378,12 @@ const GlitchDashboard: React.FC<GlitchDashboardProps> = ({
                         type="text"
                         value={targetTone}
                         onChange={(e) => setTargetTone(e.target.value)}
-                        placeholder="원하는 말투를 입력하세요"
+                        placeholder="원하는 정도를 입력하세요"
                         className="w-full bg-white p-4 px-5 rounded-2xl border border-indigo-200 text-slate-700 outline-none font-bold shadow-md focus:border-indigo-400 focus:ring-4 focus:ring-indigo-50 transition-all text-xs"
                         autoFocus
                       />
                       <button 
-                        onClick={() => { setIsCustomTone(false); setTargetTone('나의 일정처럼'); }}
+                        onClick={() => { setIsCustomTone(false); setTargetTone('매우 현실적이게'); }}
                         className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-300 hover:text-indigo-500 p-1"
                       >
                         <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>

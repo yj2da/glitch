@@ -18,7 +18,7 @@ export async function generateGlitchSuggestions(events: any[], options?: { diffi
     ];
   }
 
-  const { difficulty = '보통', category = '전체', goal = '전체', tone = '다정하고 친근한', selectedEvents = [] } = options || {};
+  const { difficulty = '보통', category = '전체', goal = '전체', tone = '매우 현실적이게', selectedEvents = [] } = options || {};
   const now = new Date().toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' });
 
   const limitedEvents = events.slice(0, 50);
@@ -28,17 +28,17 @@ export async function generateGlitchSuggestions(events: any[], options?: { diffi
   }, {});
   const statsString = Object.entries(stats).map(([k, v]) => `${k}: ${v}개`).join(', ');
 
-  // 말투(Tone) 처리: '나의 일정처럼'일 경우 기존 일정 샘플 추출
-  let toneInstruction = tone;
-  if (tone === '나의 일정처럼' && events.length > 0) {
-    const samples = events
-      .filter(e => e.title && e.title.length > 1)
-      .slice(0, 10)
-      .map(e => `"${e.title}"`)
-      .join(', ');
-    toneInstruction = `다음은 사용자의 실제 일정 제목들입니다: [${samples}]. 
-    위 일정들의 말투, 길이, 단어 선택 스타일을 분석하여 그와 아주 유사한 느낌으로 제목과 설명을 작성해주세요.`;
-  }
+  // 말투(Tone) 처리: 항상 스타일 모방을 수행하고, 'tone' 파라미터는 'glitch 정도'로 사용함
+  const samples = events
+    .filter(e => e.title && e.title.length > 1)
+    .slice(0, 10)
+    .map(e => `"${e.title}"`)
+    .join(', ');
+    
+  const toneInstruction = `
+    1. 스타일 모방: 다음은 사용자의 실제 일정 제목들입니다: [${samples}]. 위 일정들의 말투, 길이, 단어 선택 스타일을 분석하여 그와 아주 유사한 느낌으로 제목과 설명을 작성해주세요.
+    2. 답변 성향(Glitch 정도): 제안하는 활동들은 "${tone}" 성향을 띠어야 합니다.
+  `;
 
   // 선택된 일정(Selected Events) 처리
   let selectionContext = '';
